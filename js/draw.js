@@ -40,12 +40,12 @@ $(document).ready(function() {
       ctx.font = "20px sans";
       var y = buttonSpacing;
       for (var i = 0; i < leftButtons.length; i++) {
-        ctx.rect(leftMargin, y, buttonWidth, buttonHeight);
         if (i === leftIndex) {
-          ctx.fill();
-        } else {
-          ctx.stroke();
+          ctx.fillStyle = "cyan";
+          ctx.fillRect(leftMargin, y, buttonWidth, buttonHeight);
         }
+        ctx.strokeRect(leftMargin, y, buttonWidth, buttonHeight);
+        ctx.fillStyle = "black";
         ctx.fillText(leftButtons[i].label, leftMargin + buttonWidth / 2, y + 30);
         y += buttonHeight + buttonSpacing;
       }
@@ -154,6 +154,7 @@ $(document).ready(function() {
           var i = Math.floor(my / (buttonSpacing + buttonHeight));
           if (i < leftButtons.length) {
             leftIndex = i;
+            return;
           }
         }
       }
@@ -161,11 +162,8 @@ $(document).ready(function() {
     }
 
     $('#canvas').mousedown(function(e) {
-      mx = e.offsetX;
-      my = e.offsetY;
-      checkLeftButtons();
       if (leftIndex !== -1) {
-        leftButtons[i].action();
+        leftButtons[leftIndex].action();
         render();
       }
     });
@@ -179,7 +177,6 @@ $(document).ready(function() {
       if (old !== leftIndex) {
         render();
       }
-      render();
     });
 
     $('#canvas').mouseup(function(e) {
