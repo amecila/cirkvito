@@ -24,6 +24,8 @@ $(document).ready(function() {
     var selectedObjs = [];
     var movingGroup = false;
 
+    var simulating = false;
+
     // Keys
     var spaceDown = false;
     var shiftDown = false;
@@ -32,6 +34,7 @@ $(document).ready(function() {
     var leftIndex = -1;
 
     var leftButtons = [
+      {label: "START", action: toggleSimulation},
       {label: "AND", action: newGate('and')},
       {label: "OR", action: newGate('or')},
       {label: "NOT", action: newGate('not')}
@@ -220,17 +223,6 @@ $(document).ready(function() {
       draw_buttons();
     }
 
-    function simulate() {
-        updateAgenda();
-        for (var i = 0; i < agenda.length; i++) {
-            render();
-            var tasks = agenda[i];
-            for (var j = 0; j < tasks.length; j++) {
-              apply(tasks[j]);
-            }
-        }
-    }
-
     function checkLeftButtons() {
       if (mx >= leftMargin && mx <= leftMargin + buttonWidth) {
         if (my % (buttonSpacing + buttonHeight) >= buttonSpacing) {
@@ -298,14 +290,40 @@ $(document).ready(function() {
       return objs;
     }
 
+    function simulate() {
+        updateAgenda();
+        for (var i = 0; i < agenda.length; i++) {
+            render();
+            var tasks = agenda[i];
+            for (var j = 0; j < tasks.length; j++) {
+              apply(tasks[j]);
+            }
+        }
+    }
+
+    function toggleSimulation() {
+      simulating = !simulating;
+      if (simulating) {
+        leftButtons[0].label = "STOP";
+      } else {
+        leftButtons[0].label = "START";
+      }
+    }
+
     $('#canvas').mousedown(function(e) {
       mouseDown = true;
       mdx = e.offsetX;
       mdy = e.offsetY;
 
       if (leftIndex !== -1) {
-        leftButtons[leftIndex].action();
-        render();
+        if (!simulating || leftIndex == 0) {
+          leftButtons[leftIndex].action();
+          render();
+        }
+        return;
+      }
+
+      if (simulating) {
         return;
       }
 
