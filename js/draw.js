@@ -3,6 +3,7 @@ var leftMargin = 20;
 var buttonWidth = 60;
 var buttonHeight = 40;
 var buttonSpacing = 20;
+var smallMovement = 3;
 
 $(document).ready(function() {
     var ctx = $('#canvas').get(0).getContext('2d');
@@ -13,9 +14,16 @@ $(document).ready(function() {
     var px = 0;
     var py = 0;
 
-    // Mouse coordinates
+    // Mouse
     var mx = 0;
     var my = 0;
+    var mdx = 0;
+    var mdy = 0;
+    var mouseDown = false;
+    var selectedObjs = [];
+
+    // Keys
+    var spaceDown = false;
 
     // Button hover
     var leftIndex = -1;
@@ -31,7 +39,7 @@ $(document).ready(function() {
           type: type,
           ins: [],
           outs: [],
-          pos: [400, 300]
+          pos: [400 - px, 300 - py]
         })
       }
     }
@@ -132,8 +140,18 @@ $(document).ready(function() {
     function render() {
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       for (var i = 0; i < circuit.gates.length; i++) {
+        if (selectedObjs.indexOf(circuit.gates[i]) > -1) {
+          ctx.strokeStyle = "magenta";
+        }
         draw_gate(circuit.gates[i]);
+        ctx.strokeStyle = "black";
       }
+
+      if (mouseDown && !spaceDown) {
+        ctx.fillStyle = "rgba(0, 1, 1, 0.2)";
+        ctx.fillRect(mdx, mdy, mx - mdx, my - mdy);
+      }
+
       draw_buttons();
     }
 
@@ -161,26 +179,72 @@ $(document).ready(function() {
       leftIndex = -1;
     }
 
+    function checkSelection() {
+      selectedObjs = [];
+      for (var i = 0; i < circuit.gates.length; i++) {
+        var x0 = px + circuit.gates[i].pos[0];
+        var y0 = py + circuit.gates[i].pos[1];
+        if (mx >= x0 && my >= y0 && mx <= x0 + 1.5 * f && my <= y0 + f) {
+          selectedObjs.push(circuit.gates[i]);
+        }
+      }
+    }
+
     $('#canvas').mousedown(function(e) {
+      mouseDown = true;
+      mdx = e.offsetX;
+      mdy = e.offsetY;
+
       if (leftIndex !== -1) {
         leftButtons[leftIndex].action();
-        render();
       }
+
+      render();
     });
 
     $('#canvas').mousemove(function(e) {
+      if (mouseDown && spaceDown) {
+        px += e.offsetX - mx;
+        py += e.offsetY - my;
+        mx = e.offsetX;
+        my = e.offsetY;
+        render();
+        return;
+      }
+
       mx = e.offsetX;
       my = e.offsetY;
-    
+
       var old = leftIndex;
       checkLeftButtons();
-      if (old !== leftIndex) {
+      if (old !== leftIndex || mouseDown) {
         render();
       }
     });
 
     $('#canvas').mouseup(function(e) {
-      //alert('goodbye bunnies')
+      mouseDown = false;
+
+      if (Math.abs(mx - mdx) <= smallMovement && Math.abs(my - mdy) <= smallMovement) {
+        checkSelection();
+      } else if (!spaceDown) {
+        alert('catch');
+      }
+      render();
+    });
+
+    $(document).keydown(function(e) {
+      if (e.which === 32) {
+        e.preventDefault();
+        spaceDown = true;
+      }
+    });
+
+    $(document).keyup(function(e) {
+      if (e.which === 32) {
+        e.preventDefault();
+        spaceDown = false;
+      }
     });
 
     render();
