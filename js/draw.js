@@ -24,14 +24,17 @@ $(document).ready(function() {
     var selectedObjs = [];
     var movingGroup = false;
 
-    var simulating = false;
-
     // Keys
     var spaceDown = false;
     var shiftDown = false;
 
     // Button hover
     var leftIndex = -1;
+ 
+    // Simulation
+    var simulating = false;
+    var intervalID = undefined;
+    var 
 
     var leftButtons = [
       {label: "START", action: toggleSimulation},
@@ -205,6 +208,14 @@ $(document).ready(function() {
       }
     }
 
+    function draw_node(node) {
+      var x0 = px + node.pos[0];
+      var y0 = py + node.pos[1];
+
+      ctx.fillStyle="#FF6600"; //orange
+      ctx.fillRect(x0, y0, 0.3*f, 0.3*f);
+    }
+
     function render() {
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       for (var i = 0; i < circuit.gates.length; i++) {
@@ -305,8 +316,11 @@ $(document).ready(function() {
       simulating = !simulating;
       if (simulating) {
         leftButtons[0].label = "STOP";
+        updateAgenda();
+        setTimeout
       } else {
         leftButtons[0].label = "START";
+        agenda = [];
       }
     }
 
