@@ -4,6 +4,7 @@ var buttonWidth = 60;
 var buttonHeight = 40;
 var buttonSpacing = 20;
 var smallMovement = 3;
+var nodeSize = 5;
 
 $(document).ready(function() {
     var ctx = $('#canvas').get(0).getContext('2d');
@@ -21,9 +22,11 @@ $(document).ready(function() {
     var mdy = 0;
     var mouseDown = false;
     var selectedObjs = [];
+    var movingGroup = false;
 
     // Keys
     var spaceDown = false;
+    var shiftDown = false;
 
     // Button hover
     var leftIndex = -1;
@@ -147,7 +150,7 @@ $(document).ready(function() {
         ctx.strokeStyle = "black";
       }
 
-      if (mouseDown && !spaceDown) {
+      if (mouseDown && !spaceDown && !movingGroup) {
         ctx.fillStyle = "rgba(0, 1, 1, 0.2)";
         ctx.fillRect(mdx, mdy, mx - mdx, my - mdy);
       }
@@ -179,17 +182,25 @@ $(document).ready(function() {
       leftIndex = -1;
     }
 
-    function checkSelection() {
-      selectedObjs = [];
+    function objectsUnderCursor() {
+      objs = [];
       for (var i = 0; i < circuit.gates.length; i++) {
         var x0 = px + circuit.gates[i].pos[0];
         var y0 = py + circuit.gates[i].pos[1];
         if (mx >= x0 && my >= y0 && mx <= x0 + 1.5 * f && my <= y0 + f) {
-          selectedObjs.push(circuit.gates[i]);
+          objs.push(circuit.gates[i]);
         }
       }
+      for (var i = 0; i < circuit.nodes.length; i++) {
+        var x0 = px + circuit.nodes[i].pos[0];
+        var y0 = px + circuit.nodes[i].pos[1];
+        if (mx >= x0 && my >= y0 && mx <= x0 + nodeSize && my <= y0 + nodeSize) {
+          objs.push(circuits.nodes[i]);
+        }
+      }
+      return objs;
     }
-
+    
     $('#canvas').mousedown(function(e) {
       mouseDown = true;
       mdx = e.offsetX;
@@ -199,17 +210,33 @@ $(document).ready(function() {
         leftButtons[leftIndex].action();
       }
 
+      if (!spaceDown) {
+        var objs = objectsUnderCursor();
+        movingGroup = false;
+        for (var i = 0; i < objs.length; i++) {
+          for (var j = 0; j < selectedObjs.length; j++) {
+            if (objs[i] == selectedObjs[j]) {
+              movingGroup = true;
+              break;
+            }
+          }
+        }
+      }
+
       render();
     });
 
     $('#canvas').mousemove(function(e) {
-      if (mouseDown && spaceDown) {
-        px += e.offsetX - mx;
-        py += e.offsetY - my;
-        mx = e.offsetX;
-        my = e.offsetY;
-        render();
-        return;
+      if (mouseDown) {
+        if (spaceDown) {
+          px += e.offsetX - mx;
+          py += e.offsetY - my;
+        } else if (movingGroup) {
+          for (var i = 0; i < selectedObjs.length; i++) {
+            selectedObjs[i].pos[0] += e.offsetX - mx;
+            selectedObjs[i].pos[1] += e.offsetY - my;
+          }
+        }
       }
 
       mx = e.offsetX;
@@ -224,10 +251,18 @@ $(document).ready(function() {
 
     $('#canvas').mouseup(function(e) {
       mouseDown = false;
+      movingGroup = false;
 
       if (Math.abs(mx - mdx) <= smallMovement && Math.abs(my - mdy) <= smallMovement) {
-        checkSelection();
-      } else if (!spaceDown) {
+        var objs = objectsUnderCursor();
+        if (objs.length > 0) {
+          if (shiftDown) {
+            selectedObjs.push(objs[0]);
+          } else {
+            selectedObjs = [objs[0]];
+          }
+        }
+      } else if (!spaceDown && !movingGroup) {
         alert('catch');
       }
       render();
@@ -237,6 +272,8 @@ $(document).ready(function() {
       if (e.which === 32) {
         e.preventDefault();
         spaceDown = true;
+      } else if (e.which == 16) {
+        shiftDown = true;
       }
     });
 
@@ -244,6 +281,8 @@ $(document).ready(function() {
       if (e.which === 32) {
         e.preventDefault();
         spaceDown = false;
+      } else if (e.which == 16) {
+        shiftDown = false;
       }
     });
 
