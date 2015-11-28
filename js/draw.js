@@ -4,7 +4,7 @@ var buttonWidth = 60;
 var buttonHeight = 40;
 var buttonSpacing = 20;
 var smallMovement = 3;
-var nodeSize = 5;
+var stepDelay = 500;
 
 $(document).ready(function() {
     var ctx = $('#canvas').get(0).getContext('2d');
@@ -34,10 +34,9 @@ $(document).ready(function() {
     // Simulation
     var simulating = false;
     var intervalID = undefined;
-    var 
 
     var leftButtons = [
-      {label: "START", action: toggleSimulation},
+      {label: "GO", action: toggleSimulation},
       {label: "AND", action: newGate('and')},
       {label: "OR", action: newGate('or')},
       {label: "NOT", action: newGate('not')}
@@ -302,14 +301,25 @@ $(document).ready(function() {
     }
 
     function simulate() {
-        updateAgenda();
-        for (var i = 0; i < agenda.length; i++) {
-            render();
-            var tasks = agenda[i];
-            for (var j = 0; j < tasks.length; j++) {
-              apply(tasks[j]);
-            }
+      updateAgenda();
+      for (var i = 0; i < agenda.length; i++) {
+        render();
+        var tasks = agenda[i];
+        for (var j = 0; j < tasks.length; j++) {
+          apply(tasks[j]);
         }
+      }
+    }
+
+    function step() {
+      if (agenda.length === 0) {
+        toggleSimulation();
+      } else {
+        for (var i = 0; i < agenda[0].length; i++) {
+          apply(agenda[0][i]);
+        }
+        shift(agenda);
+      }
     }
 
     function toggleSimulation() {
@@ -317,11 +327,16 @@ $(document).ready(function() {
       if (simulating) {
         leftButtons[0].label = "STOP";
         updateAgenda();
-        setTimeout
+        intervalID = setInterval(step, stepDelay);
       } else {
-        leftButtons[0].label = "START";
+        leftButtons[0].label = "GO";
         agenda = [];
+        if (intervalID != undefined) {
+          clearInterval(intervalID);
+          intervalID = undefined;
+        }
       }
+      render();
     }
 
     $('#canvas').mousedown(function(e) {
