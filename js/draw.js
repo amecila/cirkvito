@@ -11,9 +11,8 @@ $(document).ready(function() {
       var start_y = 50;
       ctx.beginPath();
 
-      //draw the circle part of the and
+      //draw the circle part of the and gate
       ctx.arc(start_x, start_y, height/2, -0.5 * Math.PI, 0.5 * Math.PI);
-      console.log("CIRCLE PART")
       ctx.stroke();
 
       //draw the rectangle part of the and gate
@@ -25,10 +24,18 @@ $(document).ready(function() {
     }
 
     function draw_or_gate(width, height){
-
+      var start_x = 40;
+      var start_y = 80;
+      ctx.beginPath();
+      ctx.moveTo(start_x, start_y);
+      ctx.quadraticCurveTo(start_x + 150, start_y + 20, start_x, start_y + 50);
+      //ctx.quadraticCurveTo(200, 70, 50, 100);
+      ctx.quadraticCurveTo(start_x + 50, start_y + 20, start_x, start_y);
+      ctx.stroke();
     }
 
     draw_and_gate(30, 30);
+    draw_or_gate(30, 30);
 
     function render() {
       // redraw everything!!!
