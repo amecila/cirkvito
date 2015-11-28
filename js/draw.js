@@ -1,14 +1,29 @@
+// Constants
+var leftMargin = 20;
+var buttonWidth = 60;
+var buttonHeight = 40;
+var buttonSpacing = 20;
+
 $(document).ready(function() {
     var ctx = $('#canvas').get(0).getContext('2d');
     ctx.textAlign = "center";
+
+    // Scaling and panning
     var f = 30;
     var px = 0;
     var py = 0;
 
-    var leftButtons = {
-      "AND": newGate('and'),
-      "OR": newGate('or')
-    };
+    // Mouse coordinates
+    var mx = 0;
+    var my = 0;
+
+    // Button hover
+    var leftIndex = -1;
+
+    var leftButtons = [
+      {label: "AND", action: newGate('and')},
+      {label: "OR", action: newGate('or')}
+    ];
 
     function newGate(type) {
       return function() {
@@ -23,15 +38,16 @@ $(document).ready(function() {
 
     function draw_buttons() {
       ctx.font = "20px sans";
-      var x0 = 20;
-      var width = 60;
-      var y = 25;
-      for (var label in leftButtons) {
-        if (leftButtons.hasOwnProperty(label)) {
-          ctx.strokeRect(x0, y, width, 40);
-          ctx.fillText(label, x0 + width / 2, y + 30);
-          y += 60;
+      var y = buttonSpacing;
+      for (var i = 0; i < leftButtons.length; i++) {
+        ctx.rect(leftMargin, y, buttonWidth, buttonHeight);
+        if (i === leftIndex) {
+          ctx.fill();
+        } else {
+          ctx.stroke();
         }
+        ctx.fillText(leftButtons[i].label, leftMargin + buttonWidth / 2, y + 30);
+        y += buttonHeight + buttonSpacing;
       }
     }
 
@@ -113,15 +129,12 @@ $(document).ready(function() {
       }
     }
 
-    draw_and_gate({pos: [130, 30]});
-    draw_or_gate({pos: [130, 70]});
-    draw_not_gate({pos: [130, 110]});
-    draw_generic_gate({type: 'xor', pos: [130, 150]});
-
     function render() {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       for (var i = 0; i < circuit.gates.length; i++) {
         draw_gate(circuit.gates[i]);
       }
+      draw_buttons();
     }
 
     function simulate() {
@@ -135,13 +148,43 @@ $(document).ready(function() {
         }
     }
 
+    function checkLeftButtons() {
+      if (mx >= leftMargin && mx <= leftMargin + buttonWidth) {
+        if (my % (buttonSpacing + buttonHeight) >= buttonSpacing) {
+          var i = Math.floor(my / (buttonSpacing + buttonHeight));
+          if (i < leftButtons.length) {
+            leftIndex = i;
+          }
+        }
+      }
+      leftIndex = -1;
+    }
+
     $('#canvas').mousedown(function(e) {
-      //alert('bunnies');
-    })
+      mx = e.offsetX;
+      my = e.offsetY;
+      checkLeftButtons();
+      if (leftIndex !== -1) {
+        leftButtons[i].action();
+        render();
+      }
+    });
+
+    $('#canvas').mousemove(function(e) {
+      mx = e.offsetX;
+      my = e.offsetY;
+    
+      var old = leftIndex;
+      checkLeftButtons();
+      if (old !== leftIndex) {
+        render();
+      }
+      render();
+    });
 
     $('#canvas').mouseup(function(e) {
       //alert('goodbye bunnies')
-    })
+    });
 
-    draw_buttons();
+    render();
 });
