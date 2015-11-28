@@ -1,0 +1,21 @@
+@import 'reset.css';
+
+body {
+	/* margin: 100px; */
+	text-align: center;
+}
+
+h1 {
+	font-size: 40pt;
+	margin: 50px 0 30px;
+}
+
+canvas {
+	border: 5px solid red;
+	width: 800px;
+	height: 600px;
+}
+
+footer {
+	margin-top: 30px;
+}
