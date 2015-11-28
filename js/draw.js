@@ -93,6 +93,20 @@ $(document).ready(function() {
       }
     }
 
+    // draw lines (wires) between nodes)
+    function draw_wires_between_nodes() {
+      for (var i = 0; i < circuit.conns.length; i++) {
+          p1 = nodePos(circuit.conns[i][0]);
+          p2 = nodePos(circuit.conns[i][1]);
+
+          ctx.beginPath();
+
+          ctx.moveTo(p1[0], p1[1]);
+          ctx.lineTo(p2[0], p2[1]);
+          ctx.stroke();
+        }
+    }
+
     // Drawing Gates
     function draw_and_gate(gate) {
       var x0 = f / 30 * (px + gate.pos[0]);
