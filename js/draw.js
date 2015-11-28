@@ -1,22 +1,43 @@
 $(document).ready(function() {
     var ctx = $('#canvas').get(0).getContext('2d');
+    ctx.textAlign = "center";
     var f = 30;
+    var px = 0;
+    var py = 0;
 
+    var leftButtons = {
+      "AND": newGate('and'),
+      "OR": newGate('or')
+    };
+
+    function newGate(type) {
+      return function() {
+        circuit.gates.push({
+          type: type,
+          ins: [],
+          outs: [],
+          pos: [400, 300]
+        })
+      }
+    }
 
     function draw_buttons() {
-      //draw 6 rectangular buttons
-      var start_x = 20 //20px of space between button and border
-    //  var start_y =
-    // var space = 20// spacing between rows: height = 30px and soace between buttons is 10px
-    //  for (i = 0; i < 5; i ++)
-    //    ctx.rect(start_x, start_y + space, 40, 100)
-
-    //  }
+      ctx.font = "20px sans";
+      var x0 = 20;
+      var width = 60;
+      var y = 25;
+      for (var label in leftButtons) {
+        if (leftButtons.hasOwnProperty(label)) {
+          ctx.strokeRect(x0, y, width, 40);
+          ctx.fillText(label, x0 + width / 2, y + 30);
+          y += 60;
+        }
+      }
     }
 
     function draw_and_gate(gate) {
-      var x0 = gate.pos[0];
-      var y0 = gate.pos[1];
+      var x0 = px + gate.pos[0];
+      var y0 = py + gate.pos[1];
 
       ctx.beginPath();
 
@@ -33,8 +54,8 @@ $(document).ready(function() {
     }
 
     function draw_or_gate(gate){
-      var x0 = gate.pos[0];
-      var y0 = gate.pos[1];
+      var x0 = px + gate.pos[0];
+      var y0 = py + gate.pos[1];
 
       ctx.beginPath();
 
@@ -48,8 +69,8 @@ $(document).ready(function() {
     }
 
     function draw_not_gate(gate){
-      var x0 = gate.pos[0];
-      var y0 = gate.pos[1];
+      var x0 = px + gate.pos[0];
+      var y0 = py + gate.pos[1];
 
       ctx.beginPath();
 
@@ -66,13 +87,41 @@ $(document).ready(function() {
       ctx.stroke();
     }
 
-    draw_and_gate({pos: [30, 30]});
-    draw_or_gate({pos: [30, 70]});
-    draw_not_gate({pos: [30, 110]});
+    function draw_generic_gate(gate) {
+      var x0 = px + gate.pos[0];
+      var y0 = py + gate.pos[1];
+
+      ctx.font = Math.round(0.5 * f) + "px sans";
+      ctx.strokeRect(x0, y0, 1.5 * f, f);
+      ctx.fillText(gate.type, x0 + 0.75 * f, y0 + 0.8 * f);
+    }
+
+    function draw_gate(gate) {
+      switch (gate.type) {
+        case 'and':
+          draw_and_gate(gate);
+          break;
+        case 'or':
+          draw_or_gate(gate);
+          break;
+        case 'not':
+          draw_not_gate(gate);
+          break;
+        default:
+          draw_generic_gate(gate);
+          break;
+      }
+    }
+
+    draw_and_gate({pos: [130, 30]});
+    draw_or_gate({pos: [130, 70]});
+    draw_not_gate({pos: [130, 110]});
+    draw_generic_gate({type: 'xor', pos: [130, 150]});
 
     function render() {
-      // redraw everything!!!
-      // using the circuit global
+      for (var i = 0; i < circuit.gates.length; i++) {
+        draw_gate(circuit.gates[i]);
+      }
     }
 
     function simulate() {
@@ -81,10 +130,18 @@ $(document).ready(function() {
             render();
             var tasks = agenda[i];
             for (var j = 0; j < tasks.length; j++) {
-              tasks[j]();
+              apply(tasks[j]);
             }
         }
     }
+
+    $('#canvas').mousedown(function(e) {
+      //alert('bunnies');
+    })
+
+    $('#canvas').mouseup(function(e) {
+      //alert('goodbye bunnies')
+    })
 
     draw_buttons();
 });
