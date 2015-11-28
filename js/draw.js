@@ -244,16 +244,28 @@ $(document).ready(function() {
 
       if (leftIndex !== -1) {
         leftButtons[leftIndex].action();
+        render();
+        return;
       }
 
       if (!spaceDown) {
         var objs = objectsUnderCursor();
-        movingGroup = false;
-        for (var i = 0; i < objs.length; i++) {
-          for (var j = 0; j < selectedObjs.length; j++) {
-            if (objs[i] == selectedObjs[j]) {
-              movingGroup = true;
-              break;
+        if (objs.length > 0) {
+          movingGroup = true;
+          var existing = false
+          for (var i = 0; i < objs.length; i++) {
+            for (var j = 0; j < selectedObjs.length; j++) {
+              if (objs[i] == selectedObjs[j]) {
+                existing = true;
+                break;
+              }
+            }
+          }
+          if (!existing) {
+            if (shiftDown) {
+              selectedObjs.push(objs[0]);
+            } else {
+              selectedObjs = [objs[0]];
             }
           }
         }
@@ -286,19 +298,21 @@ $(document).ready(function() {
     });
 
     $('#canvas').mouseup(function(e) {
-      if (Math.abs(mx - mdx) <= smallMovement && Math.abs(my - mdy) <= smallMovement) {
-        var objs = objectsUnderCursor();
-        if (objs.length > 0) {
-          if (shiftDown) {
-            selectedObjs.push(objs[0]);
+      if (leftIndex === -1) {
+        if (Math.abs(mx - mdx) <= smallMovement && Math.abs(my - mdy) <= smallMovement) {
+          var objs = objectsUnderCursor();
+          if (objs.length > 0) {
+            if (shiftDown) {
+              selectedObjs.push(objs[0]);
+            } else {
+              selectedObjs = [objs[0]];
+            }
           } else {
-            selectedObjs = [objs[0]];
+            selectedObjs = [];
           }
-        } else {
-          selectedObjs = [];
+        } else if (!spaceDown && !movingGroup) {
+          selectedObjs = objectsInMarquee();
         }
-      } else if (!spaceDown && !movingGroup) {
-        selectedObjs = objectsInMarquee();
       }
       mouseDown = false;
       movingGroup = false;
