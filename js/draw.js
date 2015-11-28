@@ -202,15 +202,6 @@ $(document).ready(function() {
       }
     }
 
-    function draw_node(node) {
-      var x0 = px + node.pos[0];
-      var y0 = py + node.pos[1];
-
-      ctx.fillStyle="#FF6600"; //orange
-      ctx.fillRect(x0, y0, 0.3*f, 0.3*f);
-    }
-
-
     function render() {
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       for (var i = 0; i < circuit.gates.length; i++) {
