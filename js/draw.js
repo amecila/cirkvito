@@ -35,11 +35,16 @@ $(document).ready(function() {
     var simulating = false;
     var intervalID = undefined;
 
+    // Track IDs of switches and LEDs
+    var idCounter = 0;
+
     var leftButtons = [
       {label: "GO", action: toggleSimulation},
       {label: "AND", action: newGate('and')},
       {label: "OR", action: newGate('or')},
-      {label: "NOT", action: newGate('not')}
+      {label: "NOT", action: newGate('not')},
+      {label: "SW", action: newNode('io')},
+      {label: "LED", action: newNode('led')}
     ];
 
     function newGate(type) {
@@ -49,6 +54,17 @@ $(document).ready(function() {
           ins: [],
           outs: [],
           pos: [400 - px, 300 - py]
+        })
+      }
+    }
+
+    function newNode(type){
+      return function() {
+        circuit.nodes.push({
+          id: idCounter++,
+          type: type,
+          pos: [400 - px, 300 - py],
+          value: false
         })
       }
     }
@@ -68,7 +84,15 @@ $(document).ready(function() {
       }
     }
 
-//Drawing Gates
+    // Helper function that finds the position of a node
+    function draw_wires(){
+      for (var i = 0; i < circuit.nodes.length; i++){
+
+      }
+    }
+
+
+    // Drawing Gates
     function draw_and_gate(gate) {
       var x0 = px + gate.pos[0];
       var y0 = py + gate.pos[1];
@@ -94,6 +118,9 @@ $(document).ready(function() {
       ctx.moveTo(x0 + 1.5 * f, y0 + 0.5 * f)
       ctx.lineTo(x0 + 2 * f,y0 + 0.5 * f )
       ctx.stroke();
+
+      // function to find the position of given node
+
     }
 
     function draw_or_gate(gate){
@@ -446,8 +473,4 @@ $(document).ready(function() {
     });
 
     render();
-
-
-    draw_node({pos:[100, 100]});
-    console.log("drew it")
 });
