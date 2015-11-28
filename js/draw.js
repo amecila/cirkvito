@@ -33,7 +33,8 @@ $(document).ready(function() {
 
     var leftButtons = [
       {label: "AND", action: newGate('and')},
-      {label: "OR", action: newGate('or')}
+      {label: "OR", action: newGate('or')},
+      {label: "NOT", action: newGate('not')}
     ];
 
     function newGate(type) {
@@ -194,8 +195,43 @@ $(document).ready(function() {
       for (var i = 0; i < circuit.nodes.length; i++) {
         var x0 = px + circuit.nodes[i].pos[0];
         var y0 = px + circuit.nodes[i].pos[1];
+        var size;
+        if (circuit.nodes[i].type == undefined) {
+          size = 0.2 * f;
+        } else {
+          size = 2 * f;
+        }
         if (mx >= x0 && my >= y0 && mx <= x0 + nodeSize && my <= y0 + nodeSize) {
-          objs.push(circuits.nodes[i]);
+          objs.push(circuit.nodes[i]);
+        }
+      }
+      return objs;
+    }
+
+    function objectsInMarquee() {
+      objs = [];
+      var xa = Math.min(mx, mdx);
+      var xb = Math.max(mx, mdx);
+      var ya = Math.min(my, mdy);
+      var yb = Math.max(my, mdy);
+      for (var i = 0; i < circuit.gates.length; i++) {
+        var x0 = px + circuit.gates[i].pos[0];
+        var y0 = py + circuit.gates[i].pos[1];
+        if (x0 >= xa && y0 >= ya && x0 + 1.5 * f <= xb && y0 + f <= yb) {
+          objs.push(circuit.gates[i]);
+        }
+      }
+      for (var i = 0; i < circuit.nodes.length; i++) {
+        var x0 = px + circuit.nodes[i].pos[0];
+        var y0 = px + circuit.nodes[i].pos[1];
+        var size;
+        if (circuit.nodes[i].type == undefined) {
+          size = 0.2 * f;
+        } else {
+          size = 2 * f;
+        }
+        if (x0 >= xa && y0 >= ya && x0 + size <= xb && y0 + size <= yb) {
+          objs.push(circuit.nodes[i]);
         }
       }
       return objs;
@@ -250,9 +286,6 @@ $(document).ready(function() {
     });
 
     $('#canvas').mouseup(function(e) {
-      mouseDown = false;
-      movingGroup = false;
-
       if (Math.abs(mx - mdx) <= smallMovement && Math.abs(my - mdy) <= smallMovement) {
         var objs = objectsUnderCursor();
         if (objs.length > 0) {
@@ -261,10 +294,14 @@ $(document).ready(function() {
           } else {
             selectedObjs = [objs[0]];
           }
+        } else {
+          selectedObjs = [];
         }
       } else if (!spaceDown && !movingGroup) {
-        alert('catch');
+        selectedObjs = objectsInMarquee();
       }
+      mouseDown = false;
+      movingGroup = false;
       render();
     });
 

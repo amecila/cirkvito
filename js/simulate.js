@@ -1,4 +1,4 @@
-var circuit = {nodes: [], gates: [], ins: [], outs: [], conns: []};
+var circuit = {nodes: [], gates: [], conns: []};
 
 // example:
 // circuit = {
