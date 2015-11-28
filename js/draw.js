@@ -30,7 +30,7 @@ $(document).ready(function() {
 
     // Button hover
     var leftIndex = -1;
- 
+
     // Simulation
     var simulating = false;
     var intervalID = undefined;
@@ -206,21 +206,30 @@ $(document).ready(function() {
       var x0 = px + node.pos[0];
       var y0 = py + node.pos[1];
 
-      ctx.fillStyle="#FF6600"; //orange
+      if (node.value){
+        ctx.fillStyle="#FF6600"; //orange for on
+      }
+      else {
+        ctx.fillStyle="#000000"; //black for off
+      }
       ctx.fillRect(x0, y0, f, f);
-      ctx.stroke();
     }
 
     function draw_led(node){
       var x0 = px + node.pos[0];
       var y0 = py + node.pos[1];
 
-      ctx.fillStyle="#00B8E6"; //blue
+      if (node.value){
+        ctx.fillStyle="#00B8E6"; //blue for on
+      }
+      else {
+        ctx.fillStyle="#000000"; //black for off
+      }
       ctx.arc(x0, y0, f/2, 0 * Math.PI, 2 * Math.PI);
       ctx.fill();
     }
 
-    function draw_io(){
+    function draw_any_node(node) {
       switch (node.type) {
         case 'io':
           draw_switch(node);
@@ -250,6 +259,14 @@ $(document).ready(function() {
         }
         draw_gate(circuit.gates[i]);
         ctx.strokeStyle = "black";
+      }
+
+      for (var i = 0; i < circuit.nodes.length; i++) {
+          if (selectedObjs.indexOf(circuit.nodes[i]) > -1) {
+            ctx.strokeStyle = "magenta";
+          }
+          draw_any_node(circuit.nodes[i]);
+          ctx.strokeStyle = "black";
       }
 
       if (mouseDown && !spaceDown && !movingGroup) {
