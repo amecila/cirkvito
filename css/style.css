@@ -4,19 +4,27 @@ body {
 	/* margin: 100px; */
 	text-align: center;
 	font-family: 'Sigmar One', cursive;
-}
+  }
 
 h1 {
-	font-size: 40pt;
+	font-size: 35pt;
 	margin: 50px 0 30px;
+	background-color: darkblue;
+	color: white
+}
+
+#emph {
+	background-color:coral;
 }
 
 canvas {
-	border: 5px solid red;
+	border: 5px solid darkblue;
+	background-color: white;
 	width: 800px;
 	height: 600px;
 }
 
 footer {
 	margin-top: 30px;
+	color: coral;
 }
