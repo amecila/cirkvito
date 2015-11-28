@@ -53,7 +53,7 @@ $(document).ready(function() {
           type: type,
           ins: [],
           outs: [],
-          pos: [400 - px, 300 - py]
+          pos: [400 * 30 / f - px, 300 * 30 / f - py]
         })
       }
     }
@@ -85,17 +85,18 @@ $(document).ready(function() {
     }
 
     // Helper function that finds the position of a node
-    function draw_wires(){
+    function nodePos(nodeID) {
       for (var i = 0; i < circuit.nodes.length; i++){
-
+        if (circuit.nodes[i].id == nodeId) {
+          return circuit.nodes[i].pos;
+        }
       }
     }
 
-
     // Drawing Gates
     function draw_and_gate(gate) {
-      var x0 = px + gate.pos[0];
-      var y0 = py + gate.pos[1];
+      var x0 = f / 30 * (px + gate.pos[0]);
+      var y0 = f / 30 * (py + gate.pos[1]);
 
       ctx.beginPath();
 
@@ -118,14 +119,21 @@ $(document).ready(function() {
       ctx.moveTo(x0 + 1.5 * f, y0 + 0.5 * f)
       ctx.lineTo(x0 + 2 * f,y0 + 0.5 * f )
       ctx.stroke();
+      //
+      // var pos;
+      // if (gate.ins[0] !== -1) {
+      //   pos = nodePos(gate.ins[0]);
+      //   ctx.moveTo(x0, y0 + f/3);
+      //   ctx.lineTo(px + pos[0], py + pos[1]);
+      // }
 
       // function to find the position of given node
 
     }
 
     function draw_or_gate(gate){
-      var x0 = px + gate.pos[0];
-      var y0 = py + gate.pos[1];
+      var x0 = f / 30 * (px + gate.pos[0]);
+      var y0 = f / 30 * (py + gate.pos[1]);
 
       ctx.beginPath();
 
@@ -148,8 +156,8 @@ $(document).ready(function() {
     }
 
     function draw_not_gate(gate){
-      var x0 = px + gate.pos[0];
-      var y0 = py + gate.pos[1];
+      var x0 = f / 30 * (px + gate.pos[0]);
+      var y0 = f / 30 * (py + gate.pos[1]);
 
       ctx.beginPath();
 
@@ -176,8 +184,8 @@ $(document).ready(function() {
     }
 
     function draw_generic_gate(gate) {
-      var x0 = px + gate.pos[0];
-      var y0 = py + gate.pos[1];
+      var x0 = f / 30 * (px + gate.pos[0]);
+      var y0 = f / 30 * (py + gate.pos[1]);
 
       ctx.font = Math.round(0.5 * f) + "px sans";
       ctx.strokeRect(x0, y0, 1.5 * f, f);
@@ -203,30 +211,29 @@ $(document).ready(function() {
 
 //Drawing Nodes
     function draw_switch(node){
-      var x0 = px + node.pos[0];
-      var y0 = py + node.pos[1];
+      var x0 = f / 30 * (px + node.pos[0]);
+      var y0 = f / 30 * (py + node.pos[1]);
 
+      ctx.strokeRect(x0, y0, f, f);
       if (node.value){
         ctx.fillStyle="#FF6600"; //orange for on
+        ctx.fillRect(x0, y0, f, f);
       }
-      else {
-        ctx.fillStyle="#000000"; //black for off
-      }
-      ctx.fillRect(x0, y0, f, f);
     }
 
     function draw_led(node){
-      var x0 = px + node.pos[0];
-      var y0 = py + node.pos[1];
+      var x0 = f / 30 * (px + node.pos[0]);
+      var y0 = f / 30 * (py + node.pos[1]);
 
+      ctx.beginPath();
+
+      ctx.moveTo(x0 + f, y0 + f/2);
+      ctx.arc(x0 + f/2, y0 + f/2, f/2, 0 * Math.PI, 2 * Math.PI);
+      ctx.stroke();
       if (node.value){
         ctx.fillStyle="#00B8E6"; //blue for on
+        ctx.fill();
       }
-      else {
-        ctx.fillStyle="#000000"; //black for off
-      }
-      ctx.arc(x0, y0, f/2, 0 * Math.PI, 2 * Math.PI);
-      ctx.fill();
     }
 
     function draw_any_node(node) {
@@ -244,8 +251,8 @@ $(document).ready(function() {
     }
 
     function draw_node(node) {
-      var x0 = px + node.pos[0];
-      var y0 = py + node.pos[1];
+      var x0 = f / 30 * (px + node.pos[0]);
+      var y0 = f / 30 * (py + node.pos[1]);
 
       ctx.fillStyle="#FF6600"; //orange
       ctx.fillRect(x0, y0, 0.3*f, 0.3*f);
@@ -293,22 +300,22 @@ $(document).ready(function() {
     function objectsUnderCursor() {
       objs = [];
       for (var i = 0; i < circuit.gates.length; i++) {
-        var x0 = px + circuit.gates[i].pos[0];
-        var y0 = py + circuit.gates[i].pos[1];
+        var x0 = f / 30 * (px + circuit.gates[i].pos[0]);
+        var y0 = f / 30 * (py + circuit.gates[i].pos[1]);
         if (mx >= x0 && my >= y0 && mx <= x0 + 1.5 * f && my <= y0 + f) {
           objs.push(circuit.gates[i]);
         }
       }
       for (var i = 0; i < circuit.nodes.length; i++) {
-        var x0 = px + circuit.nodes[i].pos[0];
-        var y0 = px + circuit.nodes[i].pos[1];
+        var x0 = f / 30 * (px + circuit.nodes[i].pos[0]);
+        var y0 = f / 30 * (px + circuit.nodes[i].pos[1]);
         var size;
         if (circuit.nodes[i].type == undefined) {
           size = 0.2 * f;
         } else {
           size = 2 * f;
         }
-        if (mx >= x0 && my >= y0 && mx <= x0 + nodeSize && my <= y0 + nodeSize) {
+        if (mx >= x0 && my >= y0 && mx <= x0 + size && my <= y0 + size) {
           objs.push(circuit.nodes[i]);
         }
       }
@@ -322,15 +329,15 @@ $(document).ready(function() {
       var ya = Math.min(my, mdy);
       var yb = Math.max(my, mdy);
       for (var i = 0; i < circuit.gates.length; i++) {
-        var x0 = px + circuit.gates[i].pos[0];
-        var y0 = py + circuit.gates[i].pos[1];
+        var x0 = f / 30 * (px + circuit.gates[i].pos[0]);
+        var y0 = f / 30 * (py + circuit.gates[i].pos[1]);
         if (x0 >= xa && y0 >= ya && x0 + 1.5 * f <= xb && y0 + f <= yb) {
           objs.push(circuit.gates[i]);
         }
       }
       for (var i = 0; i < circuit.nodes.length; i++) {
-        var x0 = px + circuit.nodes[i].pos[0];
-        var y0 = px + circuit.nodes[i].pos[1];
+        var x0 = f / 30 * (px + circuit.nodes[i].pos[0]);
+        var y0 = f / 30 * (px + circuit.nodes[i].pos[1]);
         var size;
         if (circuit.nodes[i].type == undefined) {
           size = 0.2 * f;
@@ -429,12 +436,12 @@ $(document).ready(function() {
     $('#canvas').mousemove(function(e) {
       if (mouseDown) {
         if (spaceDown) {
-          px += e.offsetX - mx;
-          py += e.offsetY - my;
+          px += (30 / f) * (e.offsetX - mx);
+          py += (30 / f) * (e.offsetY - my);
         } else if (movingGroup) {
           for (var i = 0; i < selectedObjs.length; i++) {
-            selectedObjs[i].pos[0] += e.offsetX - mx;
-            selectedObjs[i].pos[1] += e.offsetY - my;
+            selectedObjs[i].pos[0] += (30 / f) * (e.offsetX - mx);
+            selectedObjs[i].pos[1] += (30 / f) * (e.offsetY - my);
           }
         }
       }
