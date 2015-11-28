@@ -23,6 +23,8 @@ $(document).ready(function() {
     var mouseDown = false;
     var selectedObjs = [];
     var movingGroup = false;
+    var draggingWire = false;
+    var setWireFrom = null;
 
     // Keys
     var spaceDown = false;
@@ -331,8 +333,15 @@ $(document).ready(function() {
       }
 
       if (mouseDown && !spaceDown && !movingGroup) {
-        ctx.fillStyle = "rgba(0, 1, 1, 0.2)";
-        ctx.fillRect(mdx, mdy, mx - mdx, my - mdy);
+        if (draggingWire) {
+          ctx.beginPath();
+          ctx.moveTo(mdx, mdy);
+          ctx.moveTo(mx, my);
+          ctx.stroke();
+        } else {
+          ctx.fillStyle = "rgba(0, 1, 1, 0.2)";
+          ctx.fillRect(mdx, mdy, mx - mdx, my - mdy);
+        }
       }
 
       draw_buttons();
@@ -351,24 +360,39 @@ $(document).ready(function() {
       leftIndex = -1;
     }
 
+    function elementary(gate) {
+      return gate.type == 'AND' || gate.type == 'OR' || gate.type == 'NOT';
+    }
+
+    function gateHeight(gate) {
+      if (elementary(gate)) {
+        return f;
+      }
+      var n = Math.max(gate.ins.length, gate.outs.length);
+      return n * f;
+    }
+
+    function nodeSize(node) {
+        if (node.type === undefined) {
+          return 0.2 * f;
+        } else {
+          return 2 * f;
+        }
+    }
+
     function objectsUnderCursor() {
       objs = [];
       for (var i = 0; i < circuit.gates.length; i++) {
         var x0 = f / 30 * (px + circuit.gates[i].pos[0]);
         var y0 = f / 30 * (py + circuit.gates[i].pos[1]);
-        if (mx >= x0 && my >= y0 && mx <= x0 + 1.5 * f && my <= y0 + f) {
+        if (mx >= x0 && my >= y0 && mx <= x0 + 1.5 * f && my <= y0 + gateHeight(circuit.gates[i])) {
           objs.push(circuit.gates[i]);
         }
       }
       for (var i = 0; i < circuit.nodes.length; i++) {
         var x0 = f / 30 * (px + circuit.nodes[i].pos[0]);
         var y0 = f / 30 * (px + circuit.nodes[i].pos[1]);
-        var size;
-        if (circuit.nodes[i].type == undefined) {
-          size = 0.2 * f;
-        } else {
-          size = 2 * f;
-        }
+        var size = nodeSize(circuit.nodes[i]);
         if (mx >= x0 && my >= y0 && mx <= x0 + size && my <= y0 + size) {
           objs.push(circuit.nodes[i]);
         }
@@ -385,24 +409,44 @@ $(document).ready(function() {
       for (var i = 0; i < circuit.gates.length; i++) {
         var x0 = f / 30 * (px + circuit.gates[i].pos[0]);
         var y0 = f / 30 * (py + circuit.gates[i].pos[1]);
-        if (x0 >= xa && y0 >= ya && x0 + 1.5 * f <= xb && y0 + f <= yb) {
+        if (x0 >= xa && y0 >= ya && x0 + 1.5 * f <= xb && y0 + gateHeight(circuit.gates[i]) <= yb) {
           objs.push(circuit.gates[i]);
         }
       }
       for (var i = 0; i < circuit.nodes.length; i++) {
         var x0 = f / 30 * (px + circuit.nodes[i].pos[0]);
         var y0 = f / 30 * (px + circuit.nodes[i].pos[1]);
-        var size;
-        if (circuit.nodes[i].type == undefined) {
-          size = 0.2 * f;
-        } else {
-          size = 2 * f;
-        }
+        var size = nodeSize(circuit.nodes[i]);
         if (x0 >= xa && y0 >= ya && x0 + size <= xb && y0 + size <= yb) {
           objs.push(circuit.nodes[i]);
         }
       }
       return objs;
+    }
+
+    function leadUnderCursorSetter() {
+      for (var i = 0; i < circuit.gates.length; i++) {
+        var x0 = f / 30 * (px + circuit.gates[i].pos[0]);
+        var y0 = f / 30 * (px + circuit.gates[i].pos[1]);
+        var h = gateHeight(circuit.gates[i]);
+        if (mx >= x0 - 0.5 * f && mx <= x0 && my >= y0 && my <= y0 + h) {
+          var n = circuit.gates[i].ins.length;
+          var j = Math.floor(n * (my - y0) / h);
+          return function(id) {
+            circuit.gates[i].ins[j] = id;
+          };
+        }
+      }
+      for (var i = 0; i < circuit.nodes.length; i++) {
+        var x0 = f / 30 * (px + circuit.nodes[i].pos[0]);
+        var y0 = f / 30 * (px + circuit.nodes[i].pos[1]);
+        var size = nodeSize(circuit.nodes[i]);
+        if (mx >= x0 && my >= y0 && mx <= x0 + size && my <= y0 + size) {
+          return function(id) {
+            circuit.conns.push([circuit.nodes[i].id, id]);
+          }
+        }
+      }
     }
 
     function simulate() {
@@ -462,23 +506,29 @@ $(document).ready(function() {
       }
 
       if (!spaceDown) {
-        var objs = objectsUnderCursor();
-        if (objs.length > 0) {
-          movingGroup = true;
-          var existing = false
-          for (var i = 0; i < objs.length; i++) {
-            for (var j = 0; j < selectedObjs.length; j++) {
-              if (objs[i] == selectedObjs[j]) {
-                existing = true;
-                break;
+        setWireFrom = leadUnderCursorSetter();
+        if (setWireFrom !== null) {
+          movingGroup = false;
+          draggingWire = true;
+        } else {
+          var objs = objectsUnderCursor();
+          if (objs.length > 0) {
+            movingGroup = true;
+            var existing = false
+            for (var i = 0; i < objs.length; i++) {
+              for (var j = 0; j < selectedObjs.length; j++) {
+                if (objs[i] == selectedObjs[j]) {
+                  existing = true;
+                  break;
+                }
               }
             }
-          }
-          if (!existing) {
-            if (shiftDown) {
-              selectedObjs.push(objs[0]);
-            } else {
-              selectedObjs = [objs[0]];
+            if (!existing) {
+              if (shiftDown) {
+                selectedObjs.push(objs[0]);
+              } else {
+                selectedObjs = [objs[0]];
+              }
             }
           }
         }
@@ -524,11 +574,25 @@ $(document).ready(function() {
             selectedObjs = [];
           }
         } else if (!spaceDown && !movingGroup) {
-          selectedObjs = objectsInMarquee();
+          if (draggingWire) {
+            var setDest = leadUnderCursorSetter();
+            if (setDest != null) {
+              var id = idCounter++:
+              circuit.nodes.push({
+                id: id,
+                pos: [(mdx + mx)/2 * 30 / f - px, (mdy + my)/2 * 30 / f - py]
+              });
+              setWireFrom(id);
+              setDest(id);
+            }
+          } else {
+            selectedObjs = objectsInMarquee();
+          }
         }
       }
       mouseDown = false;
       movingGroup = false;
+      draggingWire = false;
       render();
     });
 
