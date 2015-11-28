@@ -124,27 +124,24 @@ $(document).ready(function() {
       if (gate.ins[0] !== undefined) {
         ctx.beginPath();
         pos = nodePos(gate.ins[0]);
-        ctx.moveTo(x0, y0 + f/3);
+        ctx.moveTo(x0 - 0.5 * f, y0 + f/3);
         ctx.lineTo(px + pos[0], py + pos[1]);
         ctx.stroke();
       }
       if (gate.ins[1] !== undefined) {
         ctx.beginPath();
         pos = nodePos(gate.ins[1]);
-        ctx.moveTo(x0, y0 + f * 2/3);
+        ctx.moveTo(x0 - 0.5 * f, y0 + f * 2/3);
         ctx.lineTo(px + pos[0], py + pos[1]);
         ctx.stroke();
       }
       if (gate.outs[0] !== undefined) {
         ctx.beginPath();
         pos = nodePos(gate.outs[0]);
-        ctx.moveTo(x0 + 1.5 * f, y0 + 0.5 * f);
+        ctx.moveTo(x0 + 2 * f, y0 + 0.5 * f);
         ctx.lineTo(px + pos[0], py + pos[1]);
         ctx.stroke();
       }
-
-      // function to find the position of given node
-
     }
 
     function draw_or_gate(gate){
@@ -189,14 +186,40 @@ $(document).ready(function() {
       ctx.arc(x0 + 1.3 * f + r, y0 + 0.5 * f, r, 0, Math.PI*2);
       ctx.stroke();
 
-      //draw the leads whee
-      ctx.moveTo(x0, y0 + f/3);
-      ctx.lineTo(x0 - 0.5*f, y0 + f/3);
-      ctx.moveTo(x0, y0 + f * 2/3);
-      ctx.lineTo(x0 - 0.5*f, y0 + f * 2/3);
-      ctx.moveTo(x0 + 1.5 * f, y0 + 0.5 * f)
-      ctx.lineTo(x0 + 2 * f,y0 + 0.5 * f )
-      ctx.stroke();
+       //draw the leads whee
+       ctx.moveTo(x0, y0 + f/3);
+       ctx.lineTo(x0 - 0.5*f, y0 + f/3);
+       ctx.moveTo(x0, y0 + f * 2/3);
+       ctx.lineTo(x0 - 0.5*f, y0 + f * 2/3);
+       ctx.moveTo(x0 + 1.5 * f, y0 + 0.5 * f)
+       ctx.lineTo(x0 + 2 * f,y0 + 0.5 * f )
+       ctx.stroke();
+
+
+      // draw the connecting wires
+      var pos;
+      if (gate.ins[0] !== undefined) {
+        ctx.beginPath();
+        pos = nodePos(gate.ins[0]);
+        ctx.moveTo(x0, y0 + f/2);
+        ctx.lineTo(px + pos[0], py + pos[1]);
+        ctx.stroke();
+      }
+      if (gate.ins[1] !== undefined) {
+        ctx.beginPath();
+        pos = nodePos(gate.ins[1]);
+        ctx.moveTo(x0 - 0.5 * f, y0 + f * 2/3);
+        ctx.lineTo(px + pos[0], py + pos[1]);
+        ctx.stroke();
+      }
+      if (gate.outs[0] !== undefined) {
+        ctx.beginPath();
+        pos = nodePos(gate.outs[0]);
+        ctx.moveTo(x0 + 2 * f, y0 + 0.5 * f);
+        ctx.lineTo(px + pos[0], py + pos[1]);
+        ctx.stroke();
+      }
+
     }
 
     function draw_generic_gate(gate) {
@@ -230,6 +253,7 @@ $(document).ready(function() {
       var x0 = f / 30 * (px + node.pos[0]);
       var y0 = f / 30 * (py + node.pos[1]);
 
+      // draw the square
       ctx.strokeRect(x0, y0, f, f);
       if (node.value){
         ctx.fillStyle="#FF6600"; //orange for on
