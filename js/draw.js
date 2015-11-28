@@ -63,6 +63,7 @@ $(document).ready(function() {
       }
     }
 
+//Drawing Gates
     function draw_and_gate(gate) {
       var x0 = px + gate.pos[0];
       var y0 = py + gate.pos[1];
@@ -79,6 +80,15 @@ $(document).ready(function() {
       ctx.lineTo(x0, y0);
       ctx.lineTo(x0 + f, y0);
       ctx.stroke();
+
+      //draw the leads
+      ctx.moveTo(x0, y0 + f/3);
+      ctx.lineTo(x0 - 0.5*f, y0 + f/3);
+      ctx.moveTo(x0, y0 + f * 2/3);
+      ctx.lineTo(x0 - 0.5*f, y0 + f * 2/3);
+      ctx.moveTo(x0 + 1.5 * f, y0 + 0.5 * f)
+      ctx.lineTo(x0 + 2 * f,y0 + 0.5 * f )
+      ctx.stroke();
     }
 
     function draw_or_gate(gate){
@@ -93,6 +103,15 @@ $(document).ready(function() {
 
       //back part
       ctx.quadraticCurveTo(x0 + 0.5*f, y0 + 0.5 * f, x0, y0);
+      ctx.stroke();
+
+      //draw the leads
+      ctx.moveTo(x0 + 0.2 * f, y0 + f/3);
+      ctx.lineTo(x0 - 0.5*f, y0 + f/3);
+      ctx.moveTo(x0 + 0.2 * f, y0 + f * 2/3);
+      ctx.lineTo(x0 - 0.5*f, y0 + f * 2/3);
+      ctx.moveTo(x0 + 1.5 * f, y0 + 0.5 * f)
+      ctx.lineTo(x0 + 2 * f,y0 + 0.5 * f )
       ctx.stroke();
     }
 
@@ -112,6 +131,15 @@ $(document).ready(function() {
       var r = 0.1 * f;
       ctx.moveTo(x0 + 1.3 * f + 2 * r, y0 + 0.5 * f)
       ctx.arc(x0 + 1.3 * f + r, y0 + 0.5 * f, r, 0, Math.PI*2);
+      ctx.stroke();
+
+      //draw the leads whee
+      ctx.moveTo(x0, y0 + f/3);
+      ctx.lineTo(x0 - 0.5*f, y0 + f/3);
+      ctx.moveTo(x0, y0 + f * 2/3);
+      ctx.lineTo(x0 - 0.5*f, y0 + f * 2/3);
+      ctx.moveTo(x0 + 1.5 * f, y0 + 0.5 * f)
+      ctx.lineTo(x0 + 2 * f,y0 + 0.5 * f )
       ctx.stroke();
     }
 
@@ -140,6 +168,48 @@ $(document).ready(function() {
           break;
       }
     }
+
+//Drawing Nodes
+    function draw_switch(node){
+      var x0 = px + node.pos[0];
+      var y0 = py + node.pos[1];
+
+      ctx.fillStyle="#FF6600"; //orange
+      ctx.fillRect(x0, y0, f, f);
+      ctx.stroke();
+    }
+
+    function draw_led(node){
+      var x0 = px + node.pos[0];
+      var y0 = py + node.pos[1];
+
+      ctx.fillStyle="#00B8E6"; //blue
+      ctx.arc(x0, y0, f/2, 0 * Math.PI, 2 * Math.PI);
+      ctx.fill();
+    }
+
+    function draw_io(){
+      switch (node.type) {
+        case 'io':
+          draw_switch(node);
+          break;
+        case 'led':
+          draw_led(node);
+          break;
+        default:
+          draw_node(node);
+          break;
+      }
+    }
+
+    function draw_node(node) {
+      var x0 = px + node.pos[0];
+      var y0 = py + node.pos[1];
+
+      ctx.fillStyle="#FF6600"; //orange
+      ctx.fillRect(x0, y0, 0.3*f, 0.3*f);
+    }
+
 
     function render() {
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -236,7 +306,7 @@ $(document).ready(function() {
       }
       return objs;
     }
-    
+
     $('#canvas').mousedown(function(e) {
       mouseDown = true;
       mdx = e.offsetX;
@@ -338,4 +408,8 @@ $(document).ready(function() {
     });
 
     render();
+
+
+    draw_node({pos:[100, 100]});
+    console.log("drew it")
 });
