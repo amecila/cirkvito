@@ -119,13 +119,29 @@ $(document).ready(function() {
       ctx.moveTo(x0 + 1.5 * f, y0 + 0.5 * f)
       ctx.lineTo(x0 + 2 * f,y0 + 0.5 * f )
       ctx.stroke();
-      //
-      // var pos;
-      // if (gate.ins[0] !== -1) {
-      //   pos = nodePos(gate.ins[0]);
-      //   ctx.moveTo(x0, y0 + f/3);
-      //   ctx.lineTo(px + pos[0], py + pos[1]);
-      // }
+
+      var pos;
+      if (gate.ins[0] !== undefined) {
+        ctx.beginPath();
+        pos = nodePos(gate.ins[0]);
+        ctx.moveTo(x0, y0 + f/3);
+        ctx.lineTo(px + pos[0], py + pos[1]);
+        ctx.stroke();
+      }
+      if (gate.ins[1] !== undefined) {
+        ctx.beginPath();
+        pos = nodePos(gate.ins[1]);
+        ctx.moveTo(x0, y0 + f * 2/3);
+        ctx.lineTo(px + pos[0], py + pos[1]);
+        ctx.stroke();
+      }
+      if (gate.outs[0] !== undefined) {
+        ctx.beginPath();
+        pos = nodePos(gate.outs[0]);
+        ctx.moveTo(x0 + 1.5 * f, y0 + 0.5 * f);
+        ctx.lineTo(px + pos[0], py + pos[1]);
+        ctx.stroke();
+      }
 
       // function to find the position of given node
 
@@ -269,11 +285,11 @@ $(document).ready(function() {
       }
 
       for (var i = 0; i < circuit.nodes.length; i++) {
-          if (selectedObjs.indexOf(circuit.nodes[i]) > -1) {
-            ctx.strokeStyle = "magenta";
-          }
-          draw_any_node(circuit.nodes[i]);
-          ctx.strokeStyle = "black";
+        if (selectedObjs.indexOf(circuit.nodes[i]) > -1) {
+          ctx.strokeStyle = "magenta";
+        }
+        draw_any_node(circuit.nodes[i]);
+        ctx.strokeStyle = "black";
       }
 
       if (mouseDown && !spaceDown && !movingGroup) {
