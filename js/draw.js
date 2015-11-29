@@ -110,6 +110,7 @@ $(document).ready(function() {
         }
     }
 
+
     // Drawing Gates
     function draw_and_gate(gate) {
       var x0 = f / 30 * (px + gate.pos[0]);
@@ -698,9 +699,24 @@ $(document).ready(function() {
         spaceDown = true;
       } else if (e.which == 16) {
         shiftDown = true;
+      } else if (e.which == 8) {
+        for (var i = 0; i < circuit.nodes.length; i++){
+          for (var j = 0; j < selectedObjs.length; j++){
+            if (selectedObjs[j] == circuit.nodes[i]) {
+              circuit.nodes.splice(i, 1);
+            }
+          }
+        }
+        for (var i = 0; i < circuit.gates.length; i++){
+          for (var j = 0; j < selectedObjs.length; j++){
+            if (selectedObjs[j] == circuit.gates[i]) {
+              circuit.gates.splice(i, 1);
+            }
+          }
+        }
+        render();
       }
     });
-
     $(document).keyup(function(e) {
       if (e.which === 32) {
         e.preventDefault();
