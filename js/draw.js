@@ -46,7 +46,7 @@ $(document).ready(function() {
       {label: "AND", action: newGate('and')},
       {label: "OR", action: newGate('or')},
       {label: "NOT", action: newGate('not')},
-      {label: "SW", action: newNode('io')},
+      {label: "SW", action: newNode('switch')},
       {label: "LED", action: newNode('led')}
     ];
 
@@ -285,12 +285,12 @@ $(document).ready(function() {
       var x0 = f / 30 * (px + node.pos[0]);
       var y0 = f / 30 * (py + node.pos[1]);
 
-      // draw the square
-      ctx.strokeRect(x0 - f/2, y0 - f/2, f, f);
       if (node.value){
-        ctx.fillStyle="#FF6600"; //orange for on
+        ctx.fillStyle = "#2ED400"; // green for on
         ctx.fillRect(x0 - f/2, y0 - f/2, f, f);
       }
+      // draw the square
+      ctx.strokeRect(x0 - f/2, y0 - f/2, f, f);
     }
 
     function draw_led(node){
@@ -310,7 +310,7 @@ $(document).ready(function() {
 
     function draw_any_node(node) {
       switch (node.type) {
-        case 'io':
+        case 'switch':
           draw_switch(node);
           break;
         case 'led':
@@ -326,7 +326,7 @@ $(document).ready(function() {
       var x0 = f / 30 * (px + node.pos[0]);
       var y0 = f / 30 * (py + node.pos[1]);
 
-      ctx.fillStyle="#FF6600"; //orange
+      ctx.fillStyle="grey"; // orange
       ctx.fillRect(x0 - 0.3 * f, y0 - 0.3 * f, 0.6*f, 0.6*f);
       ctx.strokeRect(x0 - 0.3 * f, y0 - 0.3 * f, 0.6*f, 0.6*f);
     }
@@ -394,9 +394,9 @@ $(document).ready(function() {
 
     function nodeSize(node) {
         if (node.type === undefined) {
-          return 0.6 * f;
+          return 0.8 * f;
         } else {
-          return 2 * f;
+          return 2.2 * f;
         }
     }
 
@@ -444,7 +444,7 @@ $(document).ready(function() {
       return objs;
     }
 
-    function outLeadUnderCursorSetter() {
+    function inLeadUnderCursorSetter() {
       for (var i = 0; i < circuit.gates.length; i++) {
         if (selectedObjs.indexOf(circuit.gates[i]) > -1) {
           continue;
@@ -454,7 +454,6 @@ $(document).ready(function() {
         var h = gateHeight(circuit.gates[i]);
         if (mx >= x0 - 0.5 * f && mx <= x0 && my >= y0 && my <= y0 + h) {
           var n = circuit.gates[i].ins.length;
-          alert("f:" + f + " h:" + h);
           var j = Math.floor(n * (my - y0) / h);
           return function(id) {
             circuit.gates[i].ins[j] = id;
@@ -465,7 +464,7 @@ $(document).ready(function() {
         if (selectedObjs.indexOf(circuit.nodes[i]) > -1) {
           continue;
         }
-        if (circuit.nodes[i].type === 'led') {
+        if (circuit.nodes[i].type === 'switch') {
           continue;
         }
         var x0 = f / 30 * (px + circuit.nodes[i].pos[0]);
@@ -480,7 +479,7 @@ $(document).ready(function() {
       return null;
     }
 
-    function inLeadUnderCursorSetter() {
+    function outLeadUnderCursorSetter() {
       for (var i = 0; i < circuit.gates.length; i++) {
         if (selectedObjs.indexOf(circuit.gates[i]) > -1) {
           continue;
@@ -500,7 +499,7 @@ $(document).ready(function() {
         if (selectedObjs.indexOf(circuit.nodes[i]) > -1) {
           continue;
         }
-        if (circuit.nodes[i].type === 'switch') {
+        if (circuit.nodes[i].type === 'led') {
           continue;
         }
         var x0 = f / 30 * (px + circuit.nodes[i].pos[0]);
@@ -515,17 +514,6 @@ $(document).ready(function() {
       return null;
     }
 
-    function simulate() {
-      updateAgenda();
-      for (var i = 0; i < agenda.length; i++) {
-        render();
-        var tasks = agenda[i];
-        for (var j = 0; j < tasks.length; j++) {
-          apply(tasks[j]);
-        }
-      }
-    }
-
     function step() {
       if (agenda.length === 0) {
         toggleSimulation();
@@ -533,8 +521,9 @@ $(document).ready(function() {
         for (var i = 0; i < agenda[0].length; i++) {
           apply(agenda[0][i]);
         }
-        shift(agenda);
+        agenda.shift();
       }
+      render();
     }
 
     function toggleSimulation() {
@@ -694,6 +683,16 @@ $(document).ready(function() {
       render();
     });
 
+    $('#canvas').dblclick(function(e) {
+      var objs = objectsUnderCursor();
+      if (objs.length > 0) {
+        if (objs[0].type == 'switch') {
+          objs[0].value = !objs[0].value;
+          render();
+        }
+      }
+    });
+
     $(document).keydown(function(e) {
       if (e.which === 32) {
         e.preventDefault();
@@ -701,11 +700,13 @@ $(document).ready(function() {
       } else if (e.which == 16) {
         shiftDown = true;
       } else if (e.which == 8) {
+        e.preventDefault();
         for (var i = 0; i < circuit.nodes.length; i++){
           for (var j = 0; j < selectedObjs.length; j++){
             if (selectedObjs[j] == circuit.nodes[i]) {
               var nodeID = circuit.nodes[i].id;
               circuit.nodes.splice(i, 1);
+              // Remove references to the deleted node from gate input/output pins.
               for (var k = 0; k < circuit.gates.length; k++){
                 for (var l = 0; l < circuit.gates[k].ins.length; l++) {
                   if (circuit.gates[k].ins[l] == nodeID) {
@@ -716,6 +717,15 @@ $(document).ready(function() {
                   if (circuit.gates[k].outs[l] == nodeID) {
                     circuit.gates[k].outs[l] = undefined;
                   }
+                }
+              }
+              // Remove connections in conns list with the deleted node ID.
+              for (var i = 0; i < circuit.conns.length; i++) {
+                var a = circuit.conns[i][0];
+                var b = circuit.conns[i][1];
+                if (a == nodeID || b == nodeID) {
+                  circuit.conns.splice(i, 1);
+                  i--;
                 }
               }
             }

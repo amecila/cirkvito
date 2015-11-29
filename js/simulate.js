@@ -13,58 +13,78 @@ var circuit = {nodes: [], gates: [], conns: []};
 var agenda = [];
 
 function updateAgenda() {
-    for (var i = 0; i < circuit.nodes.length; i++) {
-        var node = circuits.nodes[i];
-        if (node.type === 'switch') {
-            propagate(0, node.id);
-        }
+  for (var i = 0; i < circuit.nodes.length; i++) {
+    var node = circuit.nodes[i];
+    if (node.type === 'switch') {
+      setValue(node.id, node.value);
+      propagate(0, node.id);
     }
+  }
+  alert("The agenda is " + agenda);
 }
 
 function propagate(time, nodeId) {
-    while (time >= agenda.length) {
-        agenda.push([]);
-    }
-    for (var i = 0; i < circuit.gates.length; i++) {
-        if (circuits.gates[i].ins.indexOf(nodeId) > -1) {
-            if (agenda[time].indexOf(i) === -1) {
-                agenda[time].push(i);
-                for (var j = 0; j < circuit.gates[i].outs.length; j++) {
-                    propagate(time + 1, j);
-                }
-            }
+  alert("propagating update of " + nodeId + " at time t="+time);
+  while (time >= agenda.length) {
+    agenda.push([]);
+  }
+  for (var i = 0; i < circuit.gates.length; i++) {
+    if (circuit.gates[i].ins.indexOf(nodeId) > -1) {
+      if (agenda[time].indexOf(i) === -1) {
+        agenda[time].push(i);
+        for (var j = 0; j < circuit.gates[i].outs.length; j++) {
+          propagate(time + 1, j);
         }
+      }
     }
+  }
 }
 
 function apply(gateIndex) {
-    var gate = circuit.gates[gateIndex];
-    switch (gate.type) {
-    case 'AND':
-        setValue(gate.outs[0], getValue(gate.ins[0]) && getValue(gate.ins[1]));
-        break;
-    case 'OR':
-        setValue(gate.outs[0], getValue(gate.ins[0]) || getValue(gate.ins[1]));
-        break;
-    case 'NOT':
-        setValue(gate.outs[0], !getValue(gate.ins[0]));
-        break;
-    }
+  var gate = circuit.gates[gateIndex];
+  switch (gate.type) {
+    case 'and':
+      setValue(gate.outs[0], getValue(gate.ins[0]) && getValue(gate.ins[1]));
+      break;
+    case 'or':
+      setValue(gate.outs[0], getValue(gate.ins[0]) || getValue(gate.ins[1]));
+      break;
+    case 'not':
+      setValue(gate.outs[0], !getValue(gate.ins[0]));
+      break;
+  }
 }
 
 function getValue(nodeId, value) {
-    for (var i = 0; i < circuit.nodes.length; i++) {
-        if (circuit.nodes[i].id == nodeId) {
-            return circuit.nodes[i].value;
-        }
+  for (var i = 0; i < circuit.nodes.length; i++) {
+    if (circuit.nodes[i].id == nodeId) {
+      return circuit.nodes[i].value;
     }
+  }
 }
 
+alreadySet = {};
+
 function setValue(nodeId, value) {
-    for (var i = 0; i < circuit.nodes.length; i++) {
-        if (circuit.nodes[i].id == nodeId) {
-            circuit.nodes[i].value = value;
-            break;
-        }
+  alreadySet = {};
+  helper(nodeId, value);
+}
+
+function helper(nodeId, value) {
+  for (var i = 0; i < circuit.nodes.length; i++) {
+    if (circuit.nodes[i].id == nodeId) {
+      circuit.nodes[i].value = value;
+      alreadySet[nodeId] = true;
+      break;
     }
+  }
+  for (var i = 0; i < circuit.conns.length; i++) {
+    var a = circuit.conns[i][0];
+    var b = circuit.conns[i][1];
+    if (alreadySet[b] !== true && a == nodeId) {
+      helper(b, value);
+    } else if (alreadySet[a] !== true && b == nodeId) {
+      helper(a, value);
+    }
+  }
 }
