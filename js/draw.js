@@ -54,8 +54,8 @@ $(document).ready(function() {
       return function() {
         circuit.gates.push({
           type: type,
-          ins: [],
-          outs: [],
+          ins: type == 'not' ? [undefined] : [undefined, undefined],
+          outs: [undefined],
           pos: [400 * 30 / f - px, 300 * 30 / f - py]
         })
       }
@@ -454,6 +454,7 @@ $(document).ready(function() {
         var h = gateHeight(circuit.gates[i]);
         if (mx >= x0 - 0.5 * f && mx <= x0 && my >= y0 && my <= y0 + h) {
           var n = circuit.gates[i].ins.length;
+          alert("f:" + f + " h:" + h);
           var j = Math.floor(n * (my - y0) / h);
           return function(id) {
             circuit.gates[i].ins[j] = id;
@@ -703,7 +704,20 @@ $(document).ready(function() {
         for (var i = 0; i < circuit.nodes.length; i++){
           for (var j = 0; j < selectedObjs.length; j++){
             if (selectedObjs[j] == circuit.nodes[i]) {
+              var nodeID = circuit.nodes[i].id;
               circuit.nodes.splice(i, 1);
+              for (var k = 0; k < circuit.gates.length; k++){
+                for (var l = 0; l < circuit.gates[k].ins.length; l++) {
+                  if (circuit.gates[k].ins[l] == nodeID) {
+                    circuit.gates[k].ins[l] = undefined;
+                  }
+                }
+                for (var l = 0; l < circuit.gates[k].outs.length; l++) {
+                  if (circuit.gates[k].outs[l] == nodeID) {
+                    circuit.gates[k].outs[l] = undefined;
+                  }
+                }
+              }
             }
           }
         }
