@@ -327,6 +327,7 @@ $(document).ready(function() {
 
       ctx.fillStyle="#FF6600"; //orange
       ctx.fillRect(x0 - 0.3 * f, y0 - 0.3 * f, 0.6*f, 0.6*f);
+      ctx.strokeRect(x0 - 0.3 * f, y0 - 0.3 * f, 0.6*f, 0.6*f);
     }
 
     function render() {
