@@ -47,7 +47,10 @@ $(document).ready(function() {
       {label: "OR", action: newGate('or')},
       {label: "NOT", action: newGate('not')},
       {label: "SW", action: newNode('switch')},
-      {label: "LED", action: newNode('led')}
+      {label: "LED", action: newNode('led')},
+      {label: "+", action: function() {px -= 200 /(f/30); py -= 150 / (f/30); f/=0.5; render(); }},
+      {label: "-", action: function() {f*=0.5; px += 200 /(f/30); py += 150 / (f/30); render();}}
+
     ];
 
     function newGate(type) {
@@ -638,6 +641,7 @@ $(document).ready(function() {
 
       mx = e.offsetX;
       my = e.offsetY;
+      console.log("px:"+px + " py:"+py)
 
       var old = leftIndex;
       checkLeftButtons();
