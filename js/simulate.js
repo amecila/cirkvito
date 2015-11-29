@@ -20,21 +20,36 @@ function updateAgenda() {
       propagate(0, node.id);
     }
   }
-  alert("The agenda is " + agenda);
 }
 
 function propagate(time, nodeId) {
-  alert("propagating update of " + nodeId + " at time t="+time);
+  // alert("propagating update of " + nodeId + " at time t="+time);
   while (time >= agenda.length) {
     agenda.push([]);
   }
+  var nodes = [nodeId];
+  for (var i = 0; i < circuit.conns.length; i++) {
+    var a = circuit.conns[i][0];
+    var b = circuit.conns[i][1];
+    if (nodes.indexOf(a) > -1 && nodes.indexOf(b) === -1) {
+      nodes.push(b);
+    }
+    if (nodes.indexOf(b) > -1 && nodes.indexOf(a) === -1) {
+      nodes.push(a);
+    }
+  }
   for (var i = 0; i < circuit.gates.length; i++) {
-    if (circuit.gates[i].ins.indexOf(nodeId) > -1) {
-      if (agenda[time].indexOf(i) === -1) {
-        agenda[time].push(i);
-        for (var j = 0; j < circuit.gates[i].outs.length; j++) {
-          propagate(time + 1, j);
-        }
+    var found = false;
+    for (var j = 0; j < nodes.length; j++) {
+      if (circuit.gates[i].ins.indexOf(nodes[j]) > -1) {
+        found = true;
+        break;
+      }
+    }
+    if (found & agenda[time].indexOf(i) === -1) {
+      agenda[time].push(i);
+      for (var j = 0; j < circuit.gates[i].outs.length; j++) {
+        propagate(time + 1, circuit.gates[i].outs[j]);
       }
     }
   }

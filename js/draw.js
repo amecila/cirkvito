@@ -4,7 +4,7 @@ var buttonWidth = 60;
 var buttonHeight = 40;
 var buttonSpacing = 20;
 var smallMovement = 3;
-var stepDelay = 500;
+var stepDelay = 100;
 
 $(document).ready(function() {
     var ctx = $('#canvas').get(0).getContext('2d');
@@ -516,7 +516,7 @@ $(document).ready(function() {
 
     function step() {
       if (agenda.length === 0) {
-        toggleSimulation();
+        // toggleSimulation();
       } else {
         for (var i = 0; i < agenda[0].length; i++) {
           apply(agenda[0][i]);
@@ -688,6 +688,11 @@ $(document).ready(function() {
       if (objs.length > 0) {
         if (objs[0].type == 'switch') {
           objs[0].value = !objs[0].value;
+          if (simulating) {
+            // propagate(0, objs[0].id);
+            toggleSimulation();
+            toggleSimulation();
+          }
           render();
         }
       }
