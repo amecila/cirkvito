@@ -10,6 +10,7 @@ var circuit = {nodes: [], gates: [], conns: []};
 //  conns: [[42, 6]]
 // };
 
+/*
 var agenda = [];
 
 function updateAgenda() {
@@ -52,6 +53,22 @@ function propagate(time, nodeId) {
         propagate(time + 1, circuit.gates[i].outs[j]);
       }
     }
+  }
+}
+*/
+
+function startSimulation() {
+  for (var i = 0; i < circuit.nodes.length; i++) {
+    var node = circuit.nodes[i];
+    if (node.type === 'switch') {
+      setValue(node.id, node.value);
+    }
+  }
+}
+
+function step() {
+  for (var i = 0; i < circuit.gates.length; i++) {
+    apply(i);
   }
 }
 

@@ -517,6 +517,7 @@ $(document).ready(function() {
       return null;
     }
 
+    /*
     function step() {
       if (agenda.length === 0) {
         // toggleSimulation();
@@ -528,13 +529,14 @@ $(document).ready(function() {
       }
       render();
     }
+    */
 
     function toggleSimulation() {
       simulating = !simulating;
       if (simulating) {
         leftButtons[0].label = "STOP";
-        updateAgenda();
-        intervalID = setInterval(step, stepDelay);
+        startSimulation();
+        intervalID = setInterval(function() { step(); render(); }, stepDelay);
       } else {
         leftButtons[0].label = "GO";
         agenda = [];
@@ -693,9 +695,10 @@ $(document).ready(function() {
         if (objs[0].type == 'switch') {
           objs[0].value = !objs[0].value;
           if (simulating) {
+            setValue(objs[0].id, objs[0].value);
             // propagate(0, objs[0].id);
-            toggleSimulation();
-            toggleSimulation();
+            // toggleSimulation();
+            // toggleSimulation();
           }
           render();
         }
